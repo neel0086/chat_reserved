@@ -8,8 +8,9 @@ export const setTalks = async (req,res) =>{
     
     try{
         const exist = await Mssg.findOne({members:{$all:[receiverId,senderId]}})
+        const exist1 = await Mssg.findOne({members:{$all:[senderId,receiverId]}})
         
-        if (exist){
+        if (exist || exist1){
             res.status(200).json('new talk added success')
             return 
         }

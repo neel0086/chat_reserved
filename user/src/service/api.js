@@ -61,14 +61,37 @@ export const imagefile = async (formData) =>{
     }
 }
 
+export const grpDetail = async (data) =>{
+    try{
+       let res= await axios.post(`${URL}/makegrp`,data)
+    }catch(error){
+        console.log("error in making group in api");
+    }
+}
+export const getgroups = async () =>{
+    try{
+       let res= await axios.get(`${URL}/getgrp`)
+       return res.data
+    }catch(error){
+        console.log("error in fetching group in api");
+    }
+}
 
 
+export const getGrpMessage = async (id) =>{
+    try{
+        let res = await axios.get(`${URL}/grpmessage/get/${id}`)
+        return res.data
+    }catch(error){
+        console.log("error while calling get grp mssg API")
+    }
+}
 
-// export const uploadFile = async (post) => {
-//     console.log(post);
-//     try {
-//         return await axios.post(`${URL}/file/upload`, post);
-//     } catch (error) {
-//         console.log('Error while calling uploadFile API ', error);
-//     }
-// }
+export const newGrpMessage = async (data) =>{
+    try{
+        let res = await axios.post(`${URL}/grpmessage/add`,data)
+        return res.data
+    }catch(error){
+        console.log("error while calling get converstion API")
+    }
+}

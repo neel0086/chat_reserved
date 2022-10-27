@@ -1,6 +1,3 @@
-
-//send and get mssg
-
 import { Server } from 'socket.io';
 import { socketData, socketDataGet } from './api.js';
 
@@ -19,11 +16,11 @@ const func = async () => {
 }
 // func()
 
-// let users = [];
+let grps = [];
 
 const addUser = (userId, socketId) => {
     
-    !users.some(user => user.userId === userId) && users.push({ userId, socketId }) && socketData({userId, socketId});
+    !users.some(user => user.userId === userId) && users.push({ userId, socketId }) ;
     
 }
 
@@ -36,22 +33,57 @@ const getUser = (userId) => {
     return users.find(user => user.userId === userId);
 }
 
+const addGrp = (userId, socketId) => {
+    
+    !grps.some(user => user.userId === userId) && grps.push({ userId, socketId }) ;
+}
+
+const removeGrp = (socketId) => {
+    grps = users.filter(user => user.socketId !== socketId);
+}
+
+const getGrp = (userId) => {
+
+    return grps.find(user => user.userId === userId);
+}
+
 io.on('connection',  (socket) => {
     console.log('user connected',socket.id)
     
     //connect
     socket.on("addUser", userId => {
         addUser(userId, socket.id);
+        console.log(users)
         io.emit("getUsers", users);
     })
+    socket.on("addGrp", userId => {
+        
+        addGrp(userId, socket.id);
+        // console.log(userId,grps)
+        io.emit("getGrp", grps);
+    })
     //send message
-    socket.on('sendMessage', ({ senderId, receiverId, text, name, photo}) => {
+    socket.on('sendMessage', ({flag, senderId, receiverId, text, name, photo}) => {
         
         const user = getUser(receiverId);
-        
+        console.log(user)
         io.to(user.socketId).emit('getMessage', {
             senderId, text, photo, name
         })
+        
+            
+        
+    })
+
+    socket.on('sendgrpMessage', ({flag, senderId, receiverId, text, name, photo}) => {
+        
+        console.log(receiverId,grps)
+            const grp = getGrp(receiverId);
+            
+            io.to(grp.socketId).emit('getgrpMessage', {
+                senderId, text, photo, name
+            })
+        
     })
 
     // disconnect

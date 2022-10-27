@@ -6,16 +6,16 @@ import MoodIcon from '@material-ui/icons/Mood';
 import SendIcon from '@material-ui/icons/Send';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import AttachFileIcon from '@material-ui/icons/AttachFile';
-import './Chat.css'
-import { UserContext } from '../context/UserProvider';
-import { getCoversation, getMessage, imagefile, newMessage, uploadFile } from '../../service/api';
+import  './Chat.css'
+import { getCoversation, getGrpMessage, imagefile, newGrpMessage, newMessage, uploadFile } from '../../service/api';
 import { AccountContext } from '../context/AccountProvider';
 import { smily,hand,animal, family, sports, places } from './emojiArray';
+import { GroupContext } from '../context/GroupProvider';
 function Chat() {
 
     //USECONTEXT TO SET USER
-    const {person} = useContext(UserContext)
-    const {account, socket, setActiveUsers, activeUsers,newMessageFlag, setNewMessageFlag } =useContext(AccountContext)
+    const {room,setActivegrps,socket} = useContext(GroupContext)
+    const {account,  activeUsers,newMessageFlag, setNewMessageFlag } =useContext(AccountContext)
     
     //USESTATE
     const [converse,setConverse] = useState({})
@@ -28,13 +28,12 @@ function Chat() {
     const [imageName,setImageName] = useState('')
     // const [imageURL,setImageURL] = useState('')
     
-
+    console.log(room)
     useEffect(() => {
         
-        socket.current.on('getMessage', data => {
-            console.log(data)
+        socket.current.on('getgrpMessage', data => {
+            
             setIncomingMessage({
-                flag:1,
                 sender: data.senderId,
                 text: data.text,
                 photo:data.photo,
@@ -46,45 +45,38 @@ function Chat() {
     }, []);
 
 
-    //when person is clicked on sidebar fetch the new persons converations
-    useEffect(()  =>{ 
-        const fetchConversation = async () =>{
-            let data = await getCoversation({senderId:account.googleId,receiverId:person.googleId})
-            setConverse(data)
-            // console.log(data)
-        }
-        fetchConversation()
-    },[person ?.googleId])
+    //when room is clicked on sidebar fetch the new rooms converations
+  
 
     
 
     useEffect(() =>{
         const getMessageDetails = async () =>{
-            let data = await getMessage(converse._id)
+            let data = await getGrpMessage(room._id)
             console.log(data)
             setConversations(data)
         }
         getMessageDetails();
-    },[converse._id,newMessageFlag,converse?._id])
+    },[room._id,newMessageFlag,converse?._id])
 
     //fetch conversations between users 
     useEffect(() => {
-        incomingMessage && converse?.members?.includes(incomingMessage.sender) && 
+        incomingMessage  && 
             setConversations((prev) => [...prev, incomingMessage]);
         
         
-    }, [incomingMessage, converse]);
+    }, [incomingMessage]);
     //SOCKET.IO CONNECTING USERS
     
-    useEffect(()=>{
-        socket.current.emit('addUser',account.googleId)
-        socket.current.on('getUsers',users =>{
-            // console.log(users)
-            setActiveUsers(users)
+    useEffect(()=>{console.log(room._id)
+        socket.current.emit('addGrp',room._id)
+        socket.current.on('getGrp',users =>{
+            console.log(users)
+            setActivegrps(users)
         })
-    },[account])
+    },[room])
 
-    const receiverId = converse?.members?.find(member => member !== account.googleId);
+    const receiverId = room._id;
     //ON ENTER PRESS SEND TEXT TO MONGODB
     const sendText = async (e) =>{
         let code = e.keyCode || e.which
@@ -94,11 +86,12 @@ function Chat() {
             let message={
                 name:account.name,
                 sender:account.googleId,
-                conversationId:converse._id,
+                conversationId:room._id,
                 text:value,
                 photo:imageName
             }
-            socket.current.emit('sendMessage', {
+            socket.current.emit('sendgrpMessage', {
+                flag:0,
                 name:account.name,
                 senderId: account.googleId,
                 receiverId,
@@ -106,7 +99,7 @@ function Chat() {
                 photo:imageName
             })
             
-            await newMessage(message)
+            await newGrpMessage(message)
             
             setValue('')
             setImageName('')
@@ -132,7 +125,7 @@ function Chat() {
     
   return (
     <>
-        {!person ? 
+        {!room ? 
         <div className='nothing'>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Internet-group-chat.svg/768px-Internet-group-chat.svg.png"/>
             <p>Select to start chat</p>
@@ -140,10 +133,10 @@ function Chat() {
         
         : <div className='chat'>
         <div className="chat_header">
-            <Avatar src={person.imageUrl}/>
+            <Avatar src={room.imageUrl}/>
             <div className="info">
-                <h3>{person ? person.name : ''}</h3>
-                <p>{activeUsers ?.find(user => user.googleId === person.googleId) ? 'online' :'offline'}</p>
+                <h3>{room ? room.grpName : ''}</h3>
+                <p>{activeUsers ?.find(user => user.googleId === room.googleId) ? 'online' :'offline'}</p>
             </div>
         
         

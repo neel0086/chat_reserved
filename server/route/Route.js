@@ -6,6 +6,7 @@ import { addUser, getUsers, socketData, socketDataGet } from '../controller/user
 import path from 'path';
 import multer from 'multer';
 import Talk from '../model/TalkSchema.js';
+import { getgroups, getGrpMessage, grpDetail, newGrpMessage } from '../controller/Group-controller.js';
 // import { getImage, uploadImage } from '../image-controller.js';
 const route = express.Router();
 
@@ -49,12 +50,16 @@ route.post('/add',addUser)
 route.post('/talk',setTalks)
 route.post('/conversation/get',getCoversation)
 route.post('/message/add',newMessage)
+route.post('/grpmessage/add',newGrpMessage)
 route.post(`/socketuser`,socketData)
+route.post(`/makegrp`,grpDetail)
 // route.post('/uploadfile', upload.single('myfile'),imagefile);
 //GET METHOD
 route.get('/users',getUsers)
 route.get('/message/get/:id',getMessage)
+route.get('/grpmessage/get/:id',getGrpMessage)
 route.get(`/getsocket`,socketDataGet)
+route.get(`/getgrp`,getgroups)
 // route.get('/file/:filename', getImage);
 
 

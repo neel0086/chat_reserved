@@ -1,0 +1,9 @@
+.g-contain{
+    display: flex;
+    justify-content: space-between;
+    padding:0.2rem 3rem;
+}
+.g-contain *{
+    color: var(--white);
+    font-family: sans-serif;
+}
